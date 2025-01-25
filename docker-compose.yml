@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  snort:
+    build: .
+    container_name: snort
+    network_mode: "host"
+    privileged: true
+    volumes:
+      - ./snort.lua:/usr/local/etc/snort/snort.lua 
+      - ./rules:/usr/local/etc/rules
+      - snort_logs:/var/log/snort  # Snort logs directory
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g  # Set JVM heap size
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data  # Elasticsearch data
+    ports:
+      - "9201:9200"  # Change host port to 9201
+    networks:
+      - snort-net
+    deploy:
+      resources:
+        limits:
+          memory: 2g  # Limit memory usage to 2GB
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.10.2
+    container_name: filebeat
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml  # Filebeat configuration
+      - snort_logs:/var/log/snort  # Share Snort logs
+    depends_on:
+      - elasticsearch
+    networks:
+      - snort-net
+networks:
+  snort-net:
+    driver: bridge
+
+volumes:
+  elasticsearch_data:
+  snort_logs:

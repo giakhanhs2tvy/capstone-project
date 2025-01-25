@@ -1,0 +1,10 @@
+alert tcp $EXTERNAL_NET any -> $HOME_NET any (flags: S; msg:"Possible SYN DDoS"; flow: stateless; detection_filter: track by_dst, count 100000, seconds 5; sid:100002;classtype:successful-dos) 
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"SQL Injection Attempt"; content:"SELECT"; content:"FROM"; classtype:web-application-attack; sid:100007; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"XSS Attempt"; content:"%3C"; content:"%3E";  classtype:web-application-attack; sid:100008; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"Brute Force Attempt Detected"; flow:to_server,established; detection_filter: track by_dst, count 100, seconds 5; sid:1000013; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"Suspicious File Inclusion"; content:"../";  sid:1000020; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"Malicious File Upload Attempt"; flow:to_server,established; content:"Content-Disposition:"; content:"filename="; http_header; pcre:"/filename=\s*.*\.(php|py|exe|sh)/i"; sid:1000021; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"Testing POST Method"; flow:to_server,established; content:"POST"; http_method; sid:1000003; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"Testing Content-Type Header"; content:"multipart/form-data"; http_header; sid:1000004; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"Malicious File Upload Attempt"; pcre:"/filename=.*\.(exe|py|jsp|asp|aspx|sh|bat|js|vbs)/i"; http_client_body; sid:1000005; rev:1;)
+

@@ -1,0 +1,11 @@
+filebeat.inputs:
+  - type: filestream
+    id: my-filestream-id
+    enabled: true
+    paths:
+      - /var/log/snort/*.txt  # Path to Snort logs inside the container
+    scan_frequency: 5s
+    refresh_interval: 5s
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]  # Use the name of the elasticsearch service as the host
